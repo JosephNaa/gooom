@@ -1,50 +1,74 @@
 package js.pekah.gooom.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import js.pekah.gooom.model.audit.DateAudit;
+import lombok.*;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
-public class User {
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username"}),
+    @UniqueConstraint(columnNames = {"email"})})
+public class User extends DateAudit {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "user_id")
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
 
-    @Column(name = "user_name")
-    @Length(min = 5, message = "*Your user name must have at least 5 characters")
-    @NotEmpty(message = "*Please provie a user name")
-    private String userName;
+    @NotBlank
+    @Column(name = "username")
+    @Size(max = 15)
+    private String username;
 
+    @NotBlank
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(max = 100)
+    @Column(name = "password")
+    private String password;
+
+    @NotBlank
+    @NaturalId
+    @Size(max = 40)
     @Column(name = "email")
-    @Email(message = "*Please provide a valide Email")
-    @NotEmpty(message = "*Please provide an email")
+    @Email
     private String email;
 
-    @Column(name = "password")
-    @Length(min = 5, message = "*Your password must have at least 5 characters")
-    @NotEmpty(message = "*Please provide your password")
-    private String pasword;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    private List<Role> roles;
 
-    @Column(name = "active")
-    private Boolean active;
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
 
-    @ManyToMany(cascade = CascadeType.MERGE)
-    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    public List<Role> getRoles() {
 
+        return roles == null ? null : new ArrayList<>(roles);
+    }
+
+    public void setRoles(List<Role> roles) {
+
+        if (roles == null) {
+            this.roles = null;
+        } else {
+            this.roles = Collections.unmodifiableList(roles);
+        }
+    }
 
 }
