@@ -1,60 +1,105 @@
 package js.pekah.gooom_app.ui.login.fragment
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import js.pekah.gooom_app.R
+import js.pekah.gooom_app.databinding.FragmentJoinBinding
+import js.pekah.gooom_app.model.dto.User
+import js.pekah.gooom_app.ui.login.LoginActivity
+import js.pekah.gooom_app.util.RetrofitUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val TAG = "JoinFragment_gooom"
+class JoinFragment : Fragment(), CoroutineScope {
+    private lateinit var loginActivity: LoginActivity
+    lateinit var binding: FragmentJoinBinding
+    private lateinit var job: Job
 
-/**
- * A simple [Fragment] subclass.
- * Use the [JoinFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class JoinFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var checkedId = false
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        loginActivity = context as LoginActivity
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        job = Job()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_join, container, false)
+        binding = FragmentJoinBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment JoinFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            JoinFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.btnConfirm.setOnClickListener {
+            val id = binding.editTextJoinID.text.toString()
+
+            if (id == "") {
+                Toast.makeText(context, "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            launch {
+                val result = RetrofitUtil.userService.isAvailable(id)
+                Log.d(TAG, "onViewCreated: $result")
+                Log.d(TAG, "onViewCreated: ${result.body()}")
+
+                val available = result.body()!!.available
+                if (available) {
+                    checkedId = true
+                    Toast.makeText(context, "사용가능한 아이디입니다", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "중복된 아이디입니다", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+
+        binding.btnJoin.setOnClickListener {
+            val id = binding.editTextJoinID.text.toString()
+            val pw = binding.editTextJoinPW.text.toString()
+            val email = binding.editTextJoinEmail.text.toString()
+
+            if (id != "" && pw != "" && email != "") {
+                if (checkedId) {
+                    val user = User(id, pw, email)
+                    launch {
+                        val result = RetrofitUtil.userService.join(user)
+                        val check = result.body()
+
+                        Log.d(TAG, "onViewCreated: $result")
+                        Log.d(TAG, "onViewCreated: $check")
+                        
+                        if (check?.success == true) {
+                            Toast.makeText(context, check.message, Toast.LENGTH_SHORT).show()
+                            loginActivity.openFragment(3)
+                        }
+                    }
+                } else {
+                    Toast.makeText(context, "아이디 중복확인을 해주세요", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
+
+
 }

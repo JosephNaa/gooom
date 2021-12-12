@@ -48,12 +48,12 @@
         android:hint="비밀번호를 입력하세요." />
 
     <EditText
-        android:id="@+id/editTextJoinName"
+        android:id="@+id/editTextJoinEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="50dp"
         android:layout_marginBottom="20dp"
-        android:hint="별명을 입력하세요."/>
+        android:hint="이메일을 입력하세요."/>
 
 
     <Button
