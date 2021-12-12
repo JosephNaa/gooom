@@ -54,7 +54,7 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getId(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -64,7 +64,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if (Boolean.TRUE.equals(userRepository.existsByUsername(signUpRequest.getUsername()))) {
+        if (Boolean.TRUE.equals(userRepository.existsByUsername(signUpRequest.getId()))) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Username is already taken");
         }
 
@@ -72,7 +72,7 @@ public class AuthController {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email is already taken");
         }
 
-        String username = signUpRequest.getUsername().toLowerCase();
+        String username = signUpRequest.getId().toLowerCase();
 
         String email = signUpRequest.getEmail().toLowerCase();
 

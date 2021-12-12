@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_page_1"
+        android:enabled="true"
+        android:title="HOME"
+        android:icon="@drawable/home"
+        />
+    <item
+        android:id="@+id/navigation_page_2"
+        android:enabled="true"
+        android:title="POP"
+        android:icon="@drawable/home"
+
+        />
+    <item
+        android:id="@+id/navigation_page_3"
+        android:enabled="true"
+        android:title="ADD"
+        android:icon="@drawable/home"
+
+        />
+    <item
+        android:id="@+id/navigation_page_4"
+        android:enabled="true"
+        android:title="SEARCH"
+        android:icon="@drawable/home"
+
+        />
+    <item
+        android:id="@+id/navigation_page_5"
+        android:enabled="true"
+        android:title="MY"
+        android:icon="@drawable/home"
+
+        />
+</menu>
